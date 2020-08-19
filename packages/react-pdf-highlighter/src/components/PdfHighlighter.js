@@ -79,7 +79,8 @@ type Props<T_HT> = {
     hideTipAndSelection: () => void,
     transformSelection: () => void
   ) => ?React$Element<*>,
-  enableAreaSelection: (event: MouseEvent) => boolean
+  enableAreaSelection: (event: MouseEvent) => boolean,
+  zoom: number
 };
 
 const EMPTY_ID = "empty-id";
@@ -115,6 +116,9 @@ class PdfHighlighter<T_HT: T_Highlight> extends PureComponent<
     }
     if (prevProps.highlights !== this.props.highlights) {
       this.renderHighlights(this.props);
+    }
+    if (prevProps.zoom !== this.props.zoom) {
+      this.viewer.currentScaleValue = this.props.zoom;
     }
   }
 
@@ -382,9 +386,9 @@ class PdfHighlighter<T_HT: T_Highlight> extends PureComponent<
   };
 
   onDocumentReady = () => {
-    const { scrollRef } = this.props;
+    const { scrollRef, zoom } = this.props;
 
-    this.viewer.currentScaleValue = "auto";
+    this.viewer.currentScaleValue = zoom;
 
     scrollRef(this.scrollTo);
   };

@@ -157,6 +157,7 @@ class App extends Component<Props, State> {
                 pdfDocument={pdfDocument}
                 enableAreaSelection={event => event.altKey}
                 onScrollChange={resetHash}
+                zoom={1}
                 scrollRef={scrollTo => {
                   this.scrollViewerTo = scrollTo;
 
