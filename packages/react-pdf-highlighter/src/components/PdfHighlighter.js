@@ -5,8 +5,9 @@ import Pointable from "react-pointable";
 import _ from "lodash/fp";
 import {
   PDFViewer,
+  PDFFindController,
   PDFLinkService,
-  getGlobalEventBus
+  EventBus
 } from "pdfjs-dist/web/pdf_viewer";
 
 import "pdfjs-dist/web/pdf_viewer.css";
@@ -126,13 +127,23 @@ class PdfHighlighter<T_HT: T_Highlight> extends PureComponent<
     const { pdfDocument } = this.props;
 
     this.debouncedAfterSelection = _.debounce(500, this.afterSelection);
-    this.linkService = new PDFLinkService();
+    var eventBus = new EventBus();
+    this.linkService = new PDFLinkService({
+      eventBus: eventBus
+    });
+
+    this.findController = new PDFFindController({
+      linkService: this.linkService,
+      eventBus: eventBus
+    });
 
     this.viewer = new PDFViewer({
       container: this.containerNode,
       enhanceTextSelection: true,
       removePageBorders: true,
-      linkService: this.linkService
+      linkService: this.linkService,
+      findController: this.findController,
+      eventBus: eventBus
     });
 
     this.viewer.setDocument(pdfDocument);
@@ -145,7 +156,7 @@ class PdfHighlighter<T_HT: T_Highlight> extends PureComponent<
     document.addEventListener("selectionchange", this.onSelectionChange);
     document.addEventListener("keydown", this.handleKeyDown);
 
-    document.addEventListener("pagesinit", () => {
+    eventBus.on("pagesinit", () => {
       this.onDocumentReady();
     });
 
@@ -386,10 +397,11 @@ class PdfHighlighter<T_HT: T_Highlight> extends PureComponent<
   };
 
   onDocumentReady = () => {
-    const { scrollRef, zoom } = this.props;
+    const { scrollRef, zoom, onDocumentReady } = this.props;
 
     this.viewer.currentScaleValue = zoom;
 
+    onDocumentReady(this.viewer);
     scrollRef(this.scrollTo);
   };
 
