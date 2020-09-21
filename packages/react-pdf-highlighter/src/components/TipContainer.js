@@ -37,6 +37,10 @@ class TipContainer extends Component<Props, State> {
   updatePosition = () => {
     const { container } = this.refs;
 
+    if (!container || !container.offsetHeight || !container.offsetWidth) {
+      return;
+    }
+
     const { offsetHeight, offsetWidth } = container;
 
     this.setState({
@@ -56,11 +60,16 @@ class TipContainer extends Component<Props, State> {
 
     const top = shouldMove ? style.bottom + 5 : style.top - height - 5;
 
-    const left = clamp(
+    // doesn't work correctly (especially problems when using zoom factors)
+    /*const left = clamp(
       style.left - width / 2,
       0,
       pageBoundingRect.width - width
-    );
+    );*/
+    let left = style.left - width / 2;
+    if (left < 0) {
+      left = 0;
+    }
 
     const childrenWithProps = React.Children.map(children, child =>
       React.cloneElement(child, {
